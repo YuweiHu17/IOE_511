@@ -70,7 +70,7 @@ def optSolver(problem: Problem, method: Method, options: Options):
             #print(f'Iteration {k}, f: {f}, norm_g: {norm_g}, delta: {delta}')
         elif method.name == 'Modified Newton':
             x_new,f_new,g_new, l_computeEta = algorithms.Modified_NewtonStep(x,problem,method,options,g)
-            #print(f'f: {f_new}, norm_g: {np.linalg.norm(g,ord=np.inf)}, sub_iter_eta: {l_computeEta}', end='\n')
+            print(f'f: {f_new}, norm_g: {np.linalg.norm(g,ord=np.inf)}, sub_iter_eta: {l_computeEta}', end='\n')
         elif method.name == 'GradientDescent':
             x_new, f_new, g_new = algorithms.gradient_descent_step(x, f, g, problem, method, options)
         elif method.name == 'TRSR1CG':

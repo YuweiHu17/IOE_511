@@ -39,7 +39,8 @@ class Options:
                  term_tol_CG=1e-6,
                  delta_init=1,
                  c_3_sr1 = 1e-4,
-                 B0_sr1 = None):
+                 B0_sr1 = None,
+                 alpha_high = 1000, alpha_low = 0, c_wolfe = 0.5):
         
         # termination constants
         self.term_tol = term_tol
@@ -52,6 +53,9 @@ class Options:
 
         # Wolfe line search (Curvature condition)
         self.c2_curve = c2_curve
+        self.alpha_high = alpha_high
+        self.alpha_low = alpha_low
+        self.c_wolfe = c_wolfe
 
         # subroutine for modifed Newton contants
         self.beta = beta
