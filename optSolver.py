@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import algorithms 
 from class_definition import *
-import time
+import timeit
 
 def optSolver(problem: Problem, method: Method, options: Options):
     # Records
@@ -44,7 +44,8 @@ def optSolver(problem: Problem, method: Method, options: Options):
             B_sr1 = np.eye(len(x))
 
     if method.name in ['BFGS', 'BFGSW', 'DFP', 'DFPW']:
-        H_BFGS = options.H0
+        n = x.shape[0]
+        H_BFGS = np.eye(n)
 
     # Initialization for L-BFGS(or k=0 case)
     if method.name == 'L-BFGS':
@@ -61,7 +62,7 @@ def optSolver(problem: Problem, method: Method, options: Options):
 
     # set initial iteration counter
     k = 0
-    start = time.time()
+    start = timeit.default_timer()
     while (k < max_iterations) and (norm_g > term_tol*max(norm_g_x0, 1)) :
         if method.name == 'TRNewtonCG':
             x_new, f_new, g_new, delta = algorithms.TRNewtonCGStep(x,problem,method,options,delta,f,g)
@@ -84,10 +85,11 @@ def optSolver(problem: Problem, method: Method, options: Options):
             x_new, f_new, g_new = algorithms.L_BFGS_step(x, f, g, problem, method, options, y_stored, s_stored)                                      
         else:
             print('Warning: method is not implemented yet')
-        cpu_times.append(time.time()-start)
+        
         # update old and new function values        
         #x_old = x; f_old = f; g_old = g; norm_g_old = norm_g
         x = x_new; f = f_new; g = g_new; norm_g = np.linalg.norm(g,ord=np.inf)
+        cpu_times.append(timeit.default_timer() - start)
 
         # increment iteration counter
         k = k + 1
