@@ -52,9 +52,9 @@ def optSolver(problem: Problem, method: Method, options: Options):
         s_stored = []
         d = -g
         if method.step_type == 'wolfe':
-            alpha = algorithms.wolfe_line_search(x, d, problem, options)
+            alpha = algorithms.wolfe_line_search(x, f, g, d, problem, options)
         elif method.step_type == 'backtracking':
-            alpha = algorithms.backtracking(x, d, problem, options)
+            alpha = algorithms.backtracking(x, f, g, d, problem, options)
         s_stored.append(alpha*d)
         x_new = x+alpha*d
         y_stored.append(problem.compute_g(x_new)-g)
@@ -69,23 +69,19 @@ def optSolver(problem: Problem, method: Method, options: Options):
             x_new, f_new, g_new, H = algorithms.newton_step(x, f, g, H, problem, method, options)
             #print(f'Iteration {k}, f: {f}, norm_g: {norm_g}, delta: {delta}')
         elif method.name == 'Modified Newton':
-            x_new,f_new,g_new, l_computeEta = algorithms.Modified_NewtonStep(x,problem,method,options,g)
-            print(f'f: {f_new}, norm_g: {np.linalg.norm(g,ord=np.inf)}, sub_iter_eta: {l_computeEta}', end='\n')
+            x_new,f_new,g_new, l_computeEta = algorithms.Modified_NewtonStep(x, f, g, problem,method,options)
+            # print(f'f: {f_new}, norm_g: {np.linalg.norm(g,ord=np.inf)}, sub_iter_eta: {l_computeEta}', end='\n')
         elif method.name == 'GradientDescent':
             x_new, f_new, g_new = algorithms.gradient_descent_step(x, f, g, problem, method, options)
         elif method.name == 'TRSR1CG':
             x_new, f_new, g_new, delta, B_sr1 = algorithms.TRSR1CGStep(x,problem,method,options,delta,f,g,B_sr1)
             #print(f'Iteration {k}, f: {f}, norm_g: {norm_g}, delta: {delta}')
         elif method.name == 'BFGS':
-            x_new, f_new, g_new, H_BFGS = algorithms.BFGS_step(x, problem, method, options, H_BFGS, g)
-        elif method.name == 'BFGSW':
-            x_new, f_new, g_new, H_BFGS = algorithms.BFGSW_step(x, problem, method, options, H_BFGS, g)
+            x_new, f_new, g_new, H_BFGS = algorithms.BFGS_step(x, f, g, H_BFGS, problem, method, options)
         elif method.name == 'DFP':
-            x_new, f_new, g_new, H_BFGS = algorithms.DFP_step(x, problem, method, options, H_BFGS, g)
-        elif method.name == 'DFPW':
-            x_new, f_new, g_new, H_BFGS = algorithms.DFP_step(x, problem, method, options, H_BFGS, g)
+            x_new, f_new, g_new, H_BFGS = algorithms.DFP_step(x, f, g, H_BFGS, problem, method, options)
         elif method.name == 'L-BFGS':
-            x_new, f_new, g_new = algorithms.L_BFGS_step(x, problem, method, options, y_stored, s_stored, g)                                      
+            x_new, f_new, g_new = algorithms.L_BFGS_step(x, f, g, problem, method, options, y_stored, s_stored)                                      
         else:
             print('Warning: method is not implemented yet')
         cpu_times.append(time.time()-start)
