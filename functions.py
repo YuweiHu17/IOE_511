@@ -261,44 +261,39 @@ def rosen_2_Hess(x):
 # Problem Description: A Rosenbrock fucntion, with d = 100
 
 def Rosenbrock_100_func(x: np.ndarray):
-    assert x.shape[1] == 1
-    x = x.flatten()
-    term1 = (1 - x[:-1])**2
-    term2 = 100 * (x[1:] - x[:-1]**2)**2
-    return np.sum(term1 + term2)
+    return np.sum((1 - x[:-1])**2 + 100 * (x[1:] - x[:-1]**2)**2)
 
-def Rosenbrock_100_grad(x: np.ndarray):
+# def Rosenbrock_100_grad(x: np.ndarray):
+#     assert x.shape[1] == 1
+#     n = x.shape[0]
+#     grad = np.zeros((n, 1))
+
+#     grad[0] = 2*(x[0]-1) + 400*x[0]*(x[0]**2-x[1])
+#     grad[1:n-1] = 200*(x[1:n-1]-x[:n-2]**2) + 2*(x[1:n-1]-1) + 400*x[1:n-1]*(x[1:n-1]**2-x[2:n])
+#     grad[n-1] = 200*(x[n-1]-x[n-2]**2) + 2*(x[n-1]-1)
+
+#     return grad
+
+def Rosenbrock_100_grad(x):
     assert x.shape[1] == 1
     n = x.shape[0]
     grad = np.zeros((n, 1))
 
-    grad[0] = 2*(x[0]-1) + 400*x[0]*(x[0]**2-x[1])
-    grad[1:n-1] = 200*(x[1:n-1]-x[:n-2]**2) + 2*(x[1:n-1]-1) + 400*x[1:n-1]*(x[1:n-1]**2-x[2:n])
-    grad[n-1] = 200*(x[n-1]-x[n-2]**2) + 2*(x[n-1]-1)
-
+    grad[0] = -2 * (1 - x[0]) - 400 * x[0] * (x[1] - x[0]**2)
+    grad[1:-1] = 200 * (x[1:-1] - x[:-2]**2) - 2 * (1 - x[1:-1]) - 400 * x[1:-1] * (x[2:] - x[1:-1]**2)
+    grad[1] = -2 * (1 - x[1]) - 400 * x[1] * (x[2] - x[1]**2)
+    grad[-1] = 200 * (x[-1] - x[-2]**2)
     return grad
 
-def Rosenbrock_100_Hess(x: np.ndarray):
-    assert x.shape[1] == 1
-    n = x.shape[0]
+def Rosenbrock_100_Hess(x):
     x = x.flatten()
-    Hess = np.zeros((n, n))
-
-    for i in range(n):
-        if i == 0:
-            Hess[i][i] = 2+400*(3*x[i]-x[i+1])
-            Hess[i][i+1] = -400*x[i]
-            continue
-        if i < n-1:
-            Hess[i][i-1] = Hess[i-1][i] ## Hessian is symmetric   
-            Hess[i][i] = 200+2+400*(3*x[i]-x[i+1])
-            Hess[i][i+1] = -400*x[i]
-            continue
-        if i == n-1:
-            Hess[i][i-1] = Hess[i-1][i]
-            Hess[i][i] = 200+2
-            continue
-    return Hess  
+    H = np.diag(-400 * x[:-1], 1) - np.diag(400 * x[:-1], -1)
+    diagonal = np.zeros(len(x), dtype=x.dtype)
+    diagonal[0] = 1200 * x[0]**2 - 400 * x[1] + 2
+    diagonal[-1] = 200
+    diagonal[1:-1] = 202 + 1200 * x[1:-1]**2 - 400 * x[2:]
+    H = H + np.diag(diagonal)
+    return H 
 
 # Problem Number: 9
 # Problem Name: DataFit_2
@@ -322,11 +317,14 @@ def DataFit_2_Hess(x):
     i = np.array([1,2,3])
     t = 1-x[1]**i
     h11 = np.sum(2 * t**2)
-    h12 = np.sum(4 * x[0] * t * i * x[1]**(i-1) + 2 * y * i * x[1]**(i-1))
+    h12 = np.sum(-4 * x[0] * i * x[1]**(i-1) + 4 * x[0] * i * x[1]**(2*i-1) + 2 * y * i * x[1]**(i-1))
     h22 = np.sum(2*y*x[0]*i*(i-1)*x[1]**(i-2) - 2*x[0]**2*i*((i-1)*x[1]**(i-2)-(2*i-1)*x[1]**(2*i-2)))
     return np.array([[h11,h12], [h12,h22]])
 
 
+
+
+# Functions that computes the value/Gradient/Hessian of Function3 in HW3
 # Problem Number: 10 & 11
 # Problem Name: Exponential_10 & Exponential_100
 # Problem Description: Dimension is 10 or 100, 
@@ -339,10 +337,10 @@ def Exponential_func(x):
 def Exponential_grad(x):
     n = len(x)
     z1 = x[0][0]
-    gi = np.zeros(n)
+    gi = np.zeros((n,1))
     gi[0] = 2*np.exp(z1)/(np.exp(z1)+1)**2 - 0.1*np.exp(-z1)
     gi[1:] = 4*(np.array(x[1:]) - 1)**3
-    return gi.reshape(-1,1)
+    return gi
 
 def Exponential_Hess(x):
     #n = len(x)
