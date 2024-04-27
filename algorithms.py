@@ -20,27 +20,23 @@ import scipy.sparse as sp
 import scipy.sparse as sparse
 
 # Subroutine for backtracking line search and Wolfe line search
-def backtracking(x: np.ndarray, d: np.ndarray, problem: Problem, options: Options):
+def backtracking(x: np.ndarray, f: np.ndarray, g: np.ndarray, d: np.ndarray, problem: Problem, options: Options):
     alpha = options.alpha_bar
-    fx = problem.compute_f(x)
-    gx = problem.compute_g(x)
-    while problem.compute_f(x+alpha*d) > fx+(options.c1)*alpha*(gx.T)@d:
+    while problem.compute_f(x+alpha*d) > f+(options.c1)*alpha*(g.T)@d:
         alpha = alpha*options.tau
     return alpha
 
-def wolfe_line_search(x: np.ndarray, d: np.ndarray, problem: Problem, options: Options):
+def wolfe_line_search(x: np.ndarray, f: np.ndarray, g: np.ndarray, d: np.ndarray, problem: Problem, options: Options):
     alpha = options.alpha_bar
     i = 0
-    fx = problem.compute_f(x)
-    gx = problem.compute_g(x)
     alpha_low = options.alpha_low
     alpha_high = options.alpha_high
     c = options.c_wolfe
     while i < options.max_iterations:
-        if problem.compute_f(x + alpha * d) < fx + options.c1 * alpha * gx.T @ d:
-            if problem.compute_g(x + alpha * d).T @ d > options.c2_curve * gx.T @ d:
+        if problem.compute_f(x + alpha * d) < f + options.c1 * alpha * g.T @ d:
+            if problem.compute_g(x + alpha * d).T @ d > options.c2_curve * g.T @ d:
                 break
-        if problem.compute_f(x + alpha * d) < fx + options.c1 * alpha * gx.T @ d:
+        if problem.compute_f(x + alpha * d) < f + options.c1 * alpha * g.T @ d:
             alpha_low = alpha
         else:
             alpha_high = alpha
@@ -139,9 +135,9 @@ def wolfe_line_search(x: np.ndarray, d: np.ndarray, problem: Problem, options: O
 def gradient_descent_step(x, f, g, problem, method, options):
     d = -g
     if method.step_type == 'wolfe':
-        alpha = wolfe_line_search(x, d, problem, options)
+        alpha = wolfe_line_search(x, f, g, d, problem, options)
     elif method.step_type == 'backtracking':
-        alpha = backtracking(x, d, problem, options)    
+        alpha = backtracking(x, f, g, d, problem, options)    
     else:
         raise ValueError('Step type is not defined')
 
@@ -194,9 +190,9 @@ def newton_step(x, f, g, H, problem, method, options):
 
     # # Assuming backtracking line search for simplicity
     if method.step_type == 'backtracking':
-        alpha = backtracking(x, d, problem, options)
+        alpha = backtracking(x, f, g, d, problem, options)
     elif method.step_type == 'wolfe':
-        alpha = wolfe_line_search(x, d, problem, options)
+        alpha = wolfe_line_search(x, f, g, d, problem, options)
     else:
         raise ValueError('Step type is not defined for Newton method')
 
@@ -226,7 +222,7 @@ def compute_eta(A, beta, max_iter):
             l += 1
     return L, l
 
-def Modified_NewtonStep(x, problem, method, options, g):
+def Modified_NewtonStep(x, f, g, problem, method, options):
     #g = problem.compute_g(x)
     H = problem.compute_H(x)
 
@@ -234,9 +230,9 @@ def Modified_NewtonStep(x, problem, method, options, g):
     d = -np.linalg.solve(L@L.T, g) # solve the linear system to get direction  
 
     if method.step_type == 'wolfe':
-        alpha = wolfe_line_search(x, d, problem, options)
+        alpha = wolfe_line_search(x, f, g, d, problem, options)
     elif method.step_type == 'backtracking':
-        alpha = backtracking(x, d, problem, options)   
+        alpha = backtracking(x, f, g, d, problem, options)   
     else:
         print('Warning: step type is not defined')
     
@@ -323,18 +319,18 @@ def TRSR1CGStep(x,problem,method,options,delta,f,g,B):
     return x_new, f_new, g_new, delta, B
 
 
-def BFGS_step(x: np.ndarray, problem: Problem, method: Method, options: Options, H: np.ndarray, gx: np.ndarray):
-    #gx = problem.compute_g(x)
+def BFGS_step(x: np.ndarray, f:np.ndarray, g:np.ndarray, H: np.ndarray, 
+              problem: Problem, method: Method, options: Options):
     n = x.shape[0]
 
-    d = -H@gx
+    d = -H@g
     if method.step_type == 'wolfe':
-        alpha = wolfe_line_search(x, d, problem, options)
+        alpha = wolfe_line_search(x, f, g, d, problem, options)
     elif method.step_type == 'backtracking':
-        alpha = backtracking(x, d, problem, options) 
+        alpha = backtracking(x, f, g, d, problem, options) 
     x_new = x + alpha*d
     s = x_new - x
-    y = problem.compute_g(x_new) - gx
+    y = problem.compute_g(x_new) - g
 
     # Skip if the inner product of s and y is not sufficiently positive
     if s.T@y >= options.epsilon*(np.linalg.norm(s))*(np.linalg.norm(y)):
@@ -376,18 +372,19 @@ def BFGS_step(x: np.ndarray, problem: Problem, method: Method, options: Options,
 
 #     return x_new, f_new, g_new, H_new
 
-def DFP_step(x: np.ndarray, problem: Problem, method: Method, options: Options, H: np.ndarray, gx: np.ndarray):
+def DFP_step(x: np.ndarray, f: np.ndarray, g: np.ndarray, H: np.ndarray,
+             problem: Problem, method: Method, options: Options):
     #gx = problem.compute_g(x)
     #n = x.shape[0]
 
-    d = -H@gx
+    d = -H@g
     if method.step_type == 'wolfe':
-        alpha = wolfe_line_search(x, d, problem, options)
+        alpha = wolfe_line_search(x, f, g, d, problem, options)
     elif method.step_type == 'backtracking':
-        alpha = backtracking(x, d, problem, options)
+        alpha = backtracking(x, f, g, d, problem, options)
     x_new = x + alpha*d
     s = x_new - x
-    y = problem.compute_g(x_new) - gx
+    y = problem.compute_g(x_new) - g
 
     # Skip if the inner product of s and y is not sufficiently positive
     if s.T@y >= options.epsilon*(np.linalg.norm(s))*(np.linalg.norm(y)):
@@ -448,17 +445,19 @@ def two_loop(grad: np.ndarray, y_stored: list, s_stored: list, options: Options)
         r = r + (alpha_list[i]-beta)*s_stored[i]
     return r
 
-def L_BFGS_step(x: np.ndarray, problem: Problem, method: Method, options: Options, y_stored: list, s_stored: list, gx: np.ndarray):
+def L_BFGS_step(x: np.ndarray, f:np.ndarray, g:np.ndarray, 
+                problem: Problem, method: Method, options: Options, 
+                y_stored: list, s_stored: list):
     #gx = problem.compute_g(x)
-    d = -two_loop(gx, y_stored, s_stored, options)
+    d = -two_loop(g, y_stored, s_stored, options)
     if method.step_type == 'wolfe':
-        alpha = wolfe_line_search(x, d, problem, options)
+        alpha = wolfe_line_search(x, f, g, d, problem, options)
     elif method.step_type == 'backtracking':
-        alpha = backtracking(x, d, problem, options)
+        alpha = backtracking(x, f, g, d, problem, options)
     x_new = x + alpha*d
     g_new = problem.compute_g(x_new)
     s = x_new - x
-    y = g_new - gx
+    y = g_new - g
     s_stored.append(s)
     y_stored.append(y)
 
