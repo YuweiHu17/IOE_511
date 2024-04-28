@@ -68,7 +68,7 @@ def optSolver(problem: Problem, method: Method, options: Options):
             x_new, f_new, g_new, delta = algorithms.TRNewtonCGStep(x,problem,method,options,delta,f,g)
         elif method.name == 'Newton':
             x_new, f_new, g_new, H = algorithms.newton_step(x, f, g, H, problem, method, options)
-            #print(f'Iteration {k}, f: {f}, norm_g: {norm_g}')
+            #print(f'f: {f_new}, norm_g: {np.linalg.norm(g_new,ord=np.inf)}')
         elif method.name == 'Modified Newton':
             x_new,f_new,g_new, l_computeEta = algorithms.Modified_NewtonStep(x, f, g, problem,method,options)
             # print(f'f: {f_new}, norm_g: {np.linalg.norm(g,ord=np.inf)}, sub_iter_eta: {l_computeEta}', end='\n')
@@ -95,6 +95,6 @@ def optSolver(problem: Problem, method: Method, options: Options):
         k = k + 1
     
     if k == max_iterations:
-        raise Warning('Maximum number of iterations reached')
+        print('Maximum number of iterations reached. Consider increasing max_iterations.')
 
     return x,f,k,cpu_times
