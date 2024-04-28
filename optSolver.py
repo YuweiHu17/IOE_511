@@ -74,6 +74,7 @@ def optSolver(problem: Problem, method: Method, options: Options):
             # print(f'f: {f_new}, norm_g: {np.linalg.norm(g,ord=np.inf)}, sub_iter_eta: {l_computeEta}', end='\n')
         elif method.name == 'GradientDescent':
             x_new, f_new, g_new = algorithms.gradient_descent_step(x, f, g, problem, method, options)
+            #print(f'f: {f_new}, norm_g: {np.linalg.norm(g_new,ord=np.inf)}')
         elif method.name == 'TRSR1CG':
             x_new, f_new, g_new, delta, B_sr1 = algorithms.TRSR1CGStep(x,problem,method,options,delta,f,g,B_sr1)
             #print(f'Iteration {k}, f: {f}, norm_g: {norm_g}, delta: {delta}')
