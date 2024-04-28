@@ -159,13 +159,15 @@ def newton_step(x, f, g, H, problem, method, options):
     else:
         H_dense = H  # Use the dense matrix directly
 
-
-    d = -np.linalg.solve(H_dense, g)
+    try:
+        d = -np.linalg.solve(H_dense, g)
+    except np.linalg.LinAlgError:
+        raise ValueError("Failed to solve Hd = -g with np.linalg.solve due to singular Hessian.")
 
     # # Convert H from sparse to dense if it's in sparse format
     # if isinstance(H, csr_matrix):
     #     H = H.toarray()
-    #     print("Converted Hessian from sparse to dense.")
+    #     print("Converted Hessian fom sparse to dense.")
     
     # print("H matrix (dense) content:\n", H)
 
