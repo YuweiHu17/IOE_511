@@ -13,6 +13,8 @@ import timeit
 def optSolver(problem: Problem, method: Method, options: Options):
     # Records
     cpu_times = []
+    f_values = []
+    norm_g_values = []
     
     
     # compute initial function/gradient/Hessian
@@ -31,6 +33,10 @@ def optSolver(problem: Problem, method: Method, options: Options):
     max_iterations  = options.max_iterations 
     
     norm_g_x0 = np.linalg.norm(problem.compute_g(problem.x0), ord=np.inf)
+
+    f_values.append(f)
+    norm_g_values.append(norm_g)
+    cpu_times.append(0)
 
     # import the initial value for TR method
     if method.name == 'TRNewtonCG' or method.name == 'TRSR1CG':
@@ -91,6 +97,8 @@ def optSolver(problem: Problem, method: Method, options: Options):
         #x_old = x; f_old = f; g_old = g; norm_g_old = norm_g
         x = x_new; f = f_new; g = g_new; norm_g = np.linalg.norm(g,ord=np.inf)
         cpu_times.append(timeit.default_timer() - start)
+        f_values.append(f)
+        norm_g_values.append(norm_g)
 
         # increment iteration counter
         k = k + 1
@@ -98,4 +106,4 @@ def optSolver(problem: Problem, method: Method, options: Options):
     if k == max_iterations:
         print('Maximum number of iterations reached. Consider increasing max_iterations.')
 
-    return x,f,k,cpu_times
+    return x,f,k,cpu_times, f_values, norm_g_values
