@@ -11,7 +11,7 @@ from class_definition import *
 import timeit
 
 def optSolver(problem: Problem, method: Method, options: Options):
-    # Records
+    # records
     cpu_times = []
     f_values = []
     norm_g_values = []
@@ -22,10 +22,6 @@ def optSolver(problem: Problem, method: Method, options: Options):
     f = problem.compute_f(x)
     g = problem.compute_g(x)
     H = problem.compute_H(x) if method.name == 'Newton' else None
-    #if H is not None:
-        #print("Hessian matrix shape:", H.shape)
-    #else:
-        #print("Hessian matrix is not used for this method")
 
     norm_g = np.linalg.norm(g,ord= np.inf)
     # parameter for termination
@@ -53,7 +49,7 @@ def optSolver(problem: Problem, method: Method, options: Options):
         n = x.shape[0]
         H_BFGS = np.eye(n)
 
-    # Initialization for L-BFGS(or k=0 case)
+    # initialization for L-BFGS(or k=0 case)
     if method.name == 'L-BFGS':
         y_stored = []
         s_stored = []
@@ -71,19 +67,15 @@ def optSolver(problem: Problem, method: Method, options: Options):
     start = timeit.default_timer()
     while (k < max_iterations) and (norm_g > term_tol*max(norm_g_x0, 1)) :
         if method.name == 'TRNewtonCG':
-            x_new, f_new, g_new, delta = algorithms.TRNewtonCGStep(x,problem,method,options,delta,f,g)
+            x_new, f_new, g_new, delta = algorithms.TRNewtonCGStep(x, problem, method, options, delta, f, g)
         elif method.name == 'Newton':
             x_new, f_new, g_new, H = algorithms.newton_step(x, f, g, H, problem, method, options)
-            #print(f'f: {f_new}, norm_g: {np.linalg.norm(g_new,ord=np.inf)}')
         elif method.name == 'Modified Newton':
-            x_new,f_new,g_new, l_computeEta = algorithms.Modified_NewtonStep(x, f, g, problem,method,options)
-            # print(f'f: {f_new}, norm_g: {np.linalg.norm(g,ord=np.inf)}, sub_iter_eta: {l_computeEta}', end='\n')
+            x_new,f_new,g_new, l_computeEta = algorithms.Modified_NewtonStep(x, f, g, problem, method, options)
         elif method.name == 'GradientDescent':
             x_new, f_new, g_new = algorithms.gradient_descent_step(x, f, g, problem, method, options)
-            #print(f'f: {f_new}, norm_g: {np.linalg.norm(g_new,ord=np.inf)}')
         elif method.name == 'TRSR1CG':
-            x_new, f_new, g_new, delta, B_sr1 = algorithms.TRSR1CGStep(x,problem,method,options,delta,f,g,B_sr1)
-            #print(f'Iteration {k}, f: {f}, norm_g: {norm_g}, delta: {delta}')
+            x_new, f_new, g_new, delta, B_sr1 = algorithms.TRSR1CGStep(x, problem, method, options, delta, f, g, B_sr1)
         elif method.name == 'BFGS':
             x_new, f_new, g_new, H_BFGS = algorithms.BFGS_step(x, f, g, H_BFGS, problem, method, options)
         elif method.name == 'DFP':
@@ -93,8 +85,7 @@ def optSolver(problem: Problem, method: Method, options: Options):
         else:
             print('Warning: method is not implemented yet')
         
-        # update old and new function values        
-        #x_old = x; f_old = f; g_old = g; norm_g_old = norm_g
+        # update new function values        
         x = x_new; f = f_new; g = g_new; norm_g = np.linalg.norm(g,ord=np.inf)
         cpu_times.append(timeit.default_timer() - start)
         f_values.append(f)
@@ -102,8 +93,9 @@ def optSolver(problem: Problem, method: Method, options: Options):
 
         # increment iteration counter
         k = k + 1
-    
-    if k == max_iterations:
-        print('Maximum number of iterations reached. Consider increasing max_iterations.')
 
-    return x,f,k,cpu_times, f_values, norm_g_values
+    return x, f, k, cpu_times, f_values, norm_g_values
+
+def optSolver_NaN(problem: Problem, method: Method, options: Options):
+    x, f, _, _, _, _ = optSolver(problem, method, options)
+    return x, f
