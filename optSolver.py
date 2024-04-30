@@ -94,6 +94,8 @@ def optSolver(problem: Problem, method: Method, options: Options):
         # increment iteration counter
         k = k + 1
 
+    if k == max_iterations:
+        print('Warning: Maximum number of iterations reached. Consider increasing max_iterations.')
     return x, f, k, cpu_times, f_values, norm_g_values
 
 def optSolver_NaN(problem: Problem, method: Method, options: Options):
