@@ -15,8 +15,6 @@
 
 import numpy as np
 from class_definition import *
-from scipy.sparse.linalg import spsolve
-import scipy.sparse as sp
 import scipy.sparse as sparse
 
 # Subroutine for backtracking line search and Wolfe line search
@@ -44,93 +42,6 @@ def wolfe_line_search(x: np.ndarray, f: np.ndarray, g: np.ndarray, d: np.ndarray
         i += 1
     return alpha
 
-# def backtracking(x, d, problem, options):
-#     alpha = options.alpha_bar
-#     fx = problem.compute_f(x)
-#     gx = problem.compute_g(x)
-
-#     # 确保d的形状正确
-#     print("Shape of d in backtracking:", d.shape)
-
-#     dot_product = np.dot(gx.T, d)
-#     if isinstance(dot_product, np.ndarray):
-#         dot_product = dot_product.item()
-
-#     # 添加调试输出以查看比较的值
-#     while True:
-#         x_new = x + alpha * d
-#         fx_new = problem.compute_f(x_new)
-#         if fx_new > fx + options.c1 * alpha * dot_product:
-#             alpha *= options.tau
-#             print("Updated alpha:", alpha)  # 打印更新后的alpha值
-#         else:
-#             break
-
-#     return alpha
-
-# def wolfe_line_search(x: np.ndarray, d: np.ndarray, problem: Problem, options: Options):
-#     alpha = options.alpha_bar
-#     fx = problem.compute_f(x)
-#     gx = problem.compute_g(x)
-
-#     # Debug prints
-#     print("Initial x:", x)
-#     print("Initial alpha:", alpha)
-#     print("Initial fx:", fx)
-#     print("Initial gx:", gx)
-
-#     if gx.ndim == 1:
-#         gx = gx[:, np.newaxis]
-
-#     dot_product = np.dot(gx.T, d)
-#     if isinstance(dot_product, np.ndarray):
-#         dot_product = dot_product.item()
-
-#     # Debug prints
-#     print("Dot product (gx.T @ d):", dot_product)
-
-#     while True:
-#         x_new = x + alpha * d
-#         fx_new = problem.compute_f(x_new)
-#         gx_new = problem.compute_g(x_new)
-
-#         if gx_new.ndim == 1:
-#             gx_new = gx_new[:, np.newaxis]
-
-#         grad_new_dot_d = np.dot(gx_new.T, d)
-#         if isinstance(grad_new_dot_d, np.ndarray):
-#             grad_new_dot_d = grad_new_dot_d.item()
-
-#         # Debug prints
-#         print("New x:", x_new)
-#         print("New fx:", fx_new)
-#         print("Grad_new_dot_d:", grad_new_dot_d)
-
-#         if fx_new > fx + options.c1 * alpha * dot_product or grad_new_dot_d < options.c2_curve * dot_product:
-#             alpha *= options.tau
-#             # Debug prints
-#             print("Updated alpha:", alpha)
-#         else:
-#             break
-
-#     return alpha
-
-
-# #1,0 GradientDescent, with backtracking line search
-# def backtracking_line_search(x, f, g, d, problem, c1, tau):
-#     alpha = 1
-#     while problem.compute_f(x + alpha * d) > f + c1 * alpha * np.dot(g, d):
-#         alpha *= tau
-#     return alpha
-
-# def wolfe_search(x, f, g, d, problem, c1, c2, tau):
-#     alpha = 1  
-#     while ((problem.compute_f(x + alpha * d) > f + c1 * alpha * np.dot(g, d)) or
-#            (np.dot(problem.compute_g(x + alpha * d), d) < c2 * np.dot(g, d))):
-#         alpha *= tau
-#     return alpha
-
-
 # gradient descent step
 def gradient_descent_step(x, f, g, problem, method, options):
     d = -g
@@ -148,12 +59,8 @@ def gradient_descent_step(x, f, g, problem, method, options):
     return x_new, f_new, g_new
 
 # 2.0 Newton, (modified Newton) with backtracking line search/wolfe line search
-
-
 def newton_step(x, f, g, H, problem, method, options):
     # Check if H is a sparse matrix and convert it to a dense array if it is
-    # def newton_step(x, f, g, H, problem, method, options):
-    # # Check if H is a sparse matrix and convert it to a dense array if it is
     if sparse.issparse(H):
         H_dense = H.toarray()
     else:
@@ -164,33 +71,6 @@ def newton_step(x, f, g, H, problem, method, options):
     except np.linalg.LinAlgError:
         raise ValueError("Failed to solve Hd = -g with np.linalg.solve due to singular Hessian.")
 
-    # # Convert H from sparse to dense if it's in sparse format
-    # if isinstance(H, csr_matrix):
-    #     H = H.toarray()
-    #     print("Converted Hessian fom sparse to dense.")
-    
-    # print("H matrix (dense) content:\n", H)
-
-    # print(g)
-    # d = -np.linalg.solve(H.toarray(), g) zhaohaoyu
-    # try:
-    #     d = -np.linalg.solve(H, g)
-    # except np.linalg.LinAlgError:
-    #     # Handle cases where the Hessian is singular or nearly singular
-    #     d = -np.linalg.pinv(H) @ g
-    #     print("Used pseudo-inverse due to singular Hessian.")
-    # # try:
-
-    #     print("Solved for direction d successfully.")
-    # except np.linalg.LinAlgError as e:
-    #     print("Failed to solve Hd = -g with np.linalg.solve due to:", str(e))
-    #     d = np.linalg.pinv(H) @ -g
-    #     print("Using pseudo-inverse for computing direction.")
-
-    # print("Shape of d after solving or pinv:", d.shape)
-    # print("Content of d:\n", d)
-
-    # # Assuming backtracking line search for simplicity
     if method.step_type == 'backtracking':
         alpha = backtracking(x, f, g, d, problem, options)
     elif method.step_type == 'wolfe':
@@ -204,9 +84,6 @@ def newton_step(x, f, g, H, problem, method, options):
     H_new = problem.compute_H(x_new)
 
     return x_new, f_new, g_new, H_new
-
-
-
 
 
 # the subroutine to select eta_k for modified Newton Method
@@ -244,7 +121,6 @@ def Modified_NewtonStep(x, f, g, problem, method, options):
 
     return x_new, f_new, g_new, l_computeEta
 
-
 # 5.0 CG_steighhaug, CG subproblem solver
 def CG_steighhaug(x, g, B, delta, options):
     # B here is the Hessian or Hessian approximation
@@ -277,8 +153,6 @@ def CG_steighhaug(x, g, B, delta, options):
 
 # 5.1 TRNewtonCG, trust region Newton with CG subproblem solver
 def TRNewtonCGStep(x,problem,method,options,delta,f,g):
-    #f = problem.compute_f(x)
-    #g = problem.compute_g(x)
     B = problem.compute_H(x)
 
     # CG Steighhaug for sub-optimization problem
@@ -324,7 +198,6 @@ def TRSR1CGStep(x,problem,method,options,delta,f,g,B):
 def BFGS_step(x: np.ndarray, f:np.ndarray, g:np.ndarray, H: np.ndarray, 
               problem: Problem, method: Method, options: Options):
     n = x.shape[0]
-
     d = -H@g
     if method.step_type == 'wolfe':
         alpha = wolfe_line_search(x, f, g, d, problem, options)
@@ -348,37 +221,8 @@ def BFGS_step(x: np.ndarray, f:np.ndarray, g:np.ndarray, H: np.ndarray,
     return x_new, f_new, g_new, H_new
 
 
-# def BFGSW_step(x: np.ndarray, problem: Problem, method: Method, options: Options, H: np.ndarray, gx: np.ndarray):
-#     #gx = problem.compute_g(x)
-#     n = x.shape[0]
-
-#     d = -H@gx
-#     if method.step_type == 'wolfe':
-#         alpha = wolfe_line_search(x, d, problem, options)
-#     elif method.step_type == 'backtracking':
-#         alpha = backtracking(x, d, problem, options) 
-#     x_new = x + alpha*d
-#     s = x_new - x
-#     y = problem.compute_g(x_new) - gx
-
-#     # Skip if the inner product of s and y is not sufficiently positive
-#     if s.T@y >= options.epsilon*(np.linalg.norm(s))*(np.linalg.norm(y)):
-#         rho = 1/((s.T@y)[0][0])
-#         V = np.eye(n) -rho*y@(s.T)
-#         H_new = (V.T)@H@V + rho*s@(s.T)
-#     else:
-#         H_new = H
-
-#     f_new = problem.compute_f(x_new)
-#     g_new = problem.compute_g(x_new)
-
-#     return x_new, f_new, g_new, H_new
-
 def DFP_step(x: np.ndarray, f: np.ndarray, g: np.ndarray, H: np.ndarray,
              problem: Problem, method: Method, options: Options):
-    #gx = problem.compute_g(x)
-    #n = x.shape[0]
-
     d = -H@g
     if method.step_type == 'wolfe':
         alpha = wolfe_line_search(x, f, g, d, problem, options)
@@ -403,31 +247,7 @@ def DFP_step(x: np.ndarray, f: np.ndarray, g: np.ndarray, H: np.ndarray,
 
     return x_new, f_new, g_new, H_new
 
-# def DFPW_step(x: np.ndarray, problem: Problem, options: Options, H: np.ndarray, gx: np.ndarray):
-#     #gx = problem.compute_g(x)
-#     #n = x.shape[0]
-
-#     d = -H@gx
-#     alpha = wolfe_line_search(x, d, problem, options)
-#     x_new = x + alpha*d
-#     s = x_new - x
-#     y = problem.compute_g(x_new) - gx
-
-#     # Skip if the inner product of s and y is not sufficiently positive
-#     if s.T@y >= options.epsilon*(np.linalg.norm(s))*(np.linalg.norm(y)):
-#         Hy = H@y
-#         denominator = (y.T@H@y)[0][0]
-#         outer = s@s.T
-#         inner = (s.T@y)[0][0]
-#         H_new = H - ((Hy)@(Hy.T))/denominator + outer/inner
-#     else:
-#         H_new = H
-
-#     f_new = problem.compute_f(x_new)
-#     g_new = problem.compute_g(x_new)
-
-#     return x_new, f_new, g_new, H_new
-
+# subroutine for L-BFGS
 def two_loop(grad: np.ndarray, y_stored: list, s_stored: list, options: Options):
     q = grad
     curr_m = len(y_stored)
@@ -438,7 +258,6 @@ def two_loop(grad: np.ndarray, y_stored: list, s_stored: list, options: Options)
         alpha_list[curr_m-i-1] = rho_list[curr_m-i-1]*(s_stored[curr_m-i-1].T)@q
         q = q-alpha_list[curr_m-i-1]*y_stored[curr_m-i-1]
     
-    # H_k0 = (s_stored[-1])@(y_stored[-1].T)/((y_stored[-1].T@y_stored[-1])[0][0])
     H_k0 = options.H0
     r = H_k0@q
 
@@ -450,7 +269,6 @@ def two_loop(grad: np.ndarray, y_stored: list, s_stored: list, options: Options)
 def L_BFGS_step(x: np.ndarray, f:np.ndarray, g:np.ndarray, 
                 problem: Problem, method: Method, options: Options, 
                 y_stored: list, s_stored: list):
-    #gx = problem.compute_g(x)
     d = -two_loop(g, y_stored, s_stored, options)
     if method.step_type == 'wolfe':
         alpha = wolfe_line_search(x, f, g, d, problem, options)
@@ -463,6 +281,7 @@ def L_BFGS_step(x: np.ndarray, f:np.ndarray, g:np.ndarray,
     s_stored.append(s)
     y_stored.append(y)
 
+    # remove the oldest pair
     if len(s_stored) > options.m:
         s_stored.pop(0)
         y_stored.pop(0)
