@@ -1,12 +1,12 @@
 # Unconstrained optimization methods by Team NaN: Haoyu Zhao, Ke Hu, Yuwei Hu
 
-##input:
+## input:
 
 problem: a Problem class object
 
 method: a Method class object
 
-options: a Options object
+options: a Options class object
 
 The user can define a problem, a method, and options for the optimization solver.
 
@@ -20,7 +20,7 @@ step_type is required for the method.
 
 x, f
 
-##output for optSolver:
+## output for optSolver:
 
 x, f, k, cpu_times, f_values, norm_g_values
 
