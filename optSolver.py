@@ -11,11 +11,18 @@ from class_definition import *
 import timeit
 
 def optSolver(problem: Problem, method: Method, options: Options):
+    # check the necessary fields in the problem and method
+    if not problem.check():
+        print('Error: problem is not properly defined')
+        return None
+    if not method.check():
+        print('Error: method is not properly defined')
+        return None
+
     # records
     cpu_times = []
     f_values = []
     norm_g_values = []
-    
     
     # compute initial function/gradient/Hessian is needed
     x = problem.x0

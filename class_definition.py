@@ -20,14 +20,29 @@ class Problem:
     def compute_g(self, x):
         self.g_eval += 1
         return self.compute_g_(x)
+    
+    def check(self):
+        if not hasattr(self,'name'):
+            return False
+        if not hasattr(self,'x0'):
+            return False
+        if not hasattr(self,'compute_f_'):
+            return False
+        if not hasattr(self,'compute_g_'):
+            return False
+        return True
         
         
 class Method:
-    def __init__(self,name,step_type=None,constant_step_size=1e-3):
+    def __init__(self,name,step_type=None):
         self.name = name
         # step_type: 'None' or 'backtracking' or ''wolfe'
         self.step_type = step_type
-        self.constant_step_size = constant_step_size
+
+    def check(self):
+        if not hasattr(self,'name'):
+            return False
+        return True
 
 class Options:
     def __init__(self,term_tol=1e-6, max_iterations=1e3, 
@@ -57,7 +72,7 @@ class Options:
         self.alpha_low = alpha_low
         self.c_wolfe = c_wolfe
 
-        # subroutine for modifed Newton contants
+        # subroutine for modifed Newton constants
         self.beta = beta
         
         # BFGS/LBFGS constants
