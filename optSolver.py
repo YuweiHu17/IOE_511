@@ -17,7 +17,7 @@ def optSolver(problem: Problem, method: Method, options: Options):
     norm_g_values = []
     
     
-    # compute initial function/gradient/Hessian
+    # compute initial function/gradient/Hessian is needed
     x = problem.x0
     f = problem.compute_f(x)
     g = problem.compute_g(x)
