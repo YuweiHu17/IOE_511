@@ -8,7 +8,7 @@ def performance_profile(method: Method, options: Options):
     # input: method, options
     # get the performance profile of the method on the given metric
     # metric: 'iteration', 'time', 'f_eval', 'g_eval'
-    # output: 4 txt files
+    # output: 1 txt files
     np.random.seed(0)
     x0_1 = 20*np.random.rand(10,1)-10
     problem1 = Problem('P1_quad_10_10', x0=x0_1, 
@@ -55,7 +55,7 @@ def performance_profile(method: Method, options: Options):
         g_eval_list.append(problem.g_eval)
 
     profile = open(f'./profiles/profile_{method.name}_{method.step_type}.txt', 'w')
-    print('Writing profile')
+    #print('Writing profile')
     for i in range(len(problems)):
         profile.write(problems[i].name+'\t')
         profile.write(str(iteration_list[i])+'\t')

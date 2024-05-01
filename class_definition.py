@@ -1,6 +1,6 @@
 from scipy.io import loadmat
 
-  
+# define the class for the OptSoler input
 
 class Problem:
     def __init__(self,name,x0,compute_f,compute_g,compute_H=None):

@@ -269,11 +269,13 @@ def two_loop(grad: np.ndarray, y_stored: list, s_stored: list, options: Options)
 def L_BFGS_step(x: np.ndarray, f:np.ndarray, g:np.ndarray, 
                 problem: Problem, method: Method, options: Options, 
                 y_stored: list, s_stored: list):
+    # compute the search direction
     d = -two_loop(g, y_stored, s_stored, options)
     if method.step_type == 'wolfe':
         alpha = wolfe_line_search(x, f, g, d, problem, options)
     elif method.step_type == 'backtracking':
         alpha = backtracking(x, f, g, d, problem, options)
+    
     x_new = x + alpha*d
     g_new = problem.compute_g(x_new)
     s = x_new - x

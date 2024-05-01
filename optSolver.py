@@ -17,7 +17,7 @@ def optSolver(problem: Problem, method: Method, options: Options):
     norm_g_values = []
     
     
-    # compute initial function/gradient/Hessian
+    # compute initial function/gradient/Hessian is needed
     x = problem.x0
     f = problem.compute_f(x)
     g = problem.compute_g(x)
@@ -94,6 +94,8 @@ def optSolver(problem: Problem, method: Method, options: Options):
         # increment iteration counter
         k = k + 1
 
+    if k == max_iterations:
+        print('Warning: Maximum number of iterations reached. Consider increasing max_iterations.')
     return x, f, k, cpu_times, f_values, norm_g_values
 
 def optSolver_NaN(problem: Problem, method: Method, options: Options):
