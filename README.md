@@ -16,7 +16,7 @@ x0 must be a column vector.
 
 step_type is required for the method.
 
-##output for optSolver_NaN:
+## output for optSolver_NaN:
 
 x, f
 
